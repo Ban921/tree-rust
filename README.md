@@ -21,7 +21,7 @@ A fast, feature-rich implementation of the Linux `tree` command written in Rust.
 ### From Source
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/tree-rust.git
+git clone https://github.com/Ban921/tree-rust.git
 cd tree-rust
 cargo install --path .
 ```
@@ -108,6 +108,18 @@ d:project
   f:Cargo.toml
 ```
 
+### TOON with details (`-TphD`, like `ls -la`)
+```
+# TOON - Tree Output
+d:drwxr-xr-x:4.0K:Jan 08 23:50:project
+  d:drwxr-xr-x:128B:Jan 08 23:49:src
+    f:-rw-r--r--:1.2K:Jan 08 23:49:main.rs
+    f:-rw-r--r--:512B:Jan 08 23:49:lib.rs
+  f:-rw-r--r--:256B:Jan 08 23:50:Cargo.toml
+```
+
+Format: `type:permissions:size:date:name`
+
 TOON (Token-Oriented Object Notation) is optimized for LLMs with minimal token usage.
 
 ## License
@@ -137,7 +149,7 @@ MIT License
 ### 從原始碼安裝
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/tree-rust.git
+git clone https://github.com/Ban921/tree-rust.git
 cd tree-rust
 cargo install --path .
 ```
@@ -171,6 +183,9 @@ tree-rust -J
 
 # TOON 輸出（Token 導向物件表示法）
 tree-rust -T
+
+# TOON 輸出（含詳細資訊，類似 ls -la）
+tree-rust -TphD
 ```
 
 ## 選項

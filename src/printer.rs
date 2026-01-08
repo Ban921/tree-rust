@@ -66,7 +66,7 @@ pub fn print_tree<W: Write>(
     match config.output_format {
         OutputFormat::Text => print_tree_text(writer, entry, config, stats),
         OutputFormat::Json => print_tree_json(writer, entry),
-        OutputFormat::Toon => print_tree_toon(writer, entry),
+        OutputFormat::Toon => print_tree_toon(writer, entry, config),
     }
 }
 
@@ -274,13 +274,13 @@ fn print_tree_json<W: Write>(writer: &mut W, entry: &TreeEntry) -> io::Result<()
 
 /// Print tree in TOON (Token-Oriented Object Notation) format
 /// TOON is optimized for LLMs with minimal token usage
-fn print_tree_toon<W: Write>(writer: &mut W, entry: &TreeEntry) -> io::Result<()> {
+fn print_tree_toon<W: Write>(writer: &mut W, entry: &TreeEntry, config: &PrintConfig) -> io::Result<()> {
     writeln!(writer, "# TOON - Tree Output")?;
-    print_toon_entry(writer, entry, 0)?;
+    print_toon_entry(writer, entry, 0, config)?;
     Ok(())
 }
 
-fn print_toon_entry<W: Write>(writer: &mut W, entry: &TreeEntry, depth: usize) -> io::Result<()> {
+fn print_toon_entry<W: Write>(writer: &mut W, entry: &TreeEntry, depth: usize, config: &PrintConfig) -> io::Result<()> {
     let indent = "  ".repeat(depth);
     let node_type = if entry.is_dir {
         "d"
@@ -290,17 +290,44 @@ fn print_toon_entry<W: Write>(writer: &mut W, entry: &TreeEntry, depth: usize) -
         "f"
     };
 
-    // Output entry: type:name
+    // Build metadata parts
+    let mut parts: Vec<String> = vec![node_type.to_string()];
+
+    if config.show_permissions {
+        parts.push(entry.permissions_string());
+    }
+
+    if config.show_size {
+        let size_str = if config.human_readable {
+            format_size(entry.size(), config.si_units)
+        } else {
+            entry.size().to_string()
+        };
+        parts.push(size_str);
+    }
+
+    if config.show_date {
+        if let Some(time) = entry.modified() {
+            let time_str = format_time(time, config.time_format.as_deref());
+            parts.push(time_str);
+        }
+    }
+
+    // Add name as last part
+    parts.push(entry.name.clone());
+
+    // Output entry: type:perm:size:date:name or type:name
+    let line = parts.join(":");
     if let Some(ref target) = entry.symlink_target {
-        writeln!(writer, "{}{}:{} -> {}", indent, node_type, entry.name, target.display())?;
+        writeln!(writer, "{}{} -> {}", indent, line, target.display())?;
     } else {
-        writeln!(writer, "{}{}:{}", indent, node_type, entry.name)?;
+        writeln!(writer, "{}{}", indent, line)?;
     }
 
     // Output children count if directory has children
     if entry.is_dir && !entry.children.is_empty() {
         for child in &entry.children {
-            print_toon_entry(writer, child, depth + 1)?;
+            print_toon_entry(writer, child, depth + 1, config)?;
         }
     }
 

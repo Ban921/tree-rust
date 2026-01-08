@@ -1,6 +1,6 @@
 [package]
 name = "tree-rust"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Ban921"]
 description = "A fast, feature-rich implementation of the Linux tree command"
